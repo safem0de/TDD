@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TDD.Api.Utils;
 
 namespace TDD.Api.Controllers.v1;
 
@@ -7,6 +8,13 @@ namespace TDD.Api.Controllers.v1;
 [ApiVersion("1.0")]
 public class WeatherForecastController : ControllerBase
 {
+    private readonly ILogger<WeatherForecastController> _logger;
+
+    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    {
+        _logger = logger;
+    }
+
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -15,7 +23,8 @@ public class WeatherForecastController : ControllerBase
     [HttpGet]
     public IEnumerable<WeatherForecast> Get()
     {
-        return Enumerable.Range(1, 5).Select(index =>
+        _logger.LogInformation("Weather forecast requested at {time}", DateTime.UtcNow);
+        var data = Enumerable.Range(1, 5).Select(index =>
             new WeatherForecast
             (
                 DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -23,6 +32,9 @@ public class WeatherForecastController : ControllerBase
                 Summaries[Random.Shared.Next(Summaries.Length)]
             ))
             .ToArray();
+
+        _logger.LogJson("✅ Weather forecast result [controller]", data);
+        return data;
     }
 }
 
